@@ -1,0 +1,33 @@
+.button-indicator{
+  background: lightblue;
+  border: #222222 4px solid;
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  display: inline-block;
+}
+.button-indicator-pressed{
+  background: red;
+  border: #222222 4px solid;
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  display: inline-block;
+}
+
+.direction-input-gate {
+  height: 200px;
+  width: 200px;
+  border: black 5px solid;
+  background: #aaaaaa;
+}
+.direction-indicator{
+  background: red;
+  border: #222222 4px solid;
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  position: relative;
+  left: 45px;
+  top: 45px;
+}
