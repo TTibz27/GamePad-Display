@@ -41,19 +41,17 @@ function gameLoop() {
     return;
   }
   const gp = gamepads[gamePadIndex];
-  const directionValues = [];
   clearInputMap();
 
   gp.buttons.forEach((button, index)=>{
     if (button.pressed) {
-      //console.log("Button " + index + "Pressed!");
       const id = getButtonMapID(index, true);
       if (id != null){
         document.getElementById(id).classList.add('button-indicator-pressed');
         document.getElementById(id).classList.remove('button-indicator');
       }
 
-      const dir = getDirectionMap(index);
+      getDirectionMap(index);
 
     }
     else {
@@ -65,7 +63,7 @@ function gameLoop() {
     }
   });
 
-  moveFromDirectionMapValues(directionValues);
+  moveFromDirectionMapValues();
   checkChargeMove();
 
   prevButtonHeldMap = Object.assign({}, buttonHeldMap);
@@ -129,20 +127,15 @@ function getDirectionMap(i){
       return null;
   }
 }
-function moveFromDirectionMapValues(directionValues){
+function moveFromDirectionMapValues(){
   let leftPos = 45;
   let upPos = 45;
-
-  let leftCharge = false;
-  let rightCharge = false;
-  let downCharge = false;
 
     if (buttonHeldMap.up === true) {
       upPos -= 45;
     }
     if (buttonHeldMap.down === true) {
       upPos += 45;
-      downCharge = true;
     }
     if (buttonHeldMap.left === true) {
       leftPos -= 45;
@@ -152,7 +145,7 @@ function moveFromDirectionMapValues(directionValues){
     }
 
     //SOCD cleaning, up is "absolute"
-    if (leftCharge && rightCharge){
+    if ( buttonHeldMap.left &&  buttonHeldMap.right){
       buttonHeldMap.left = false;
       buttonHeldMap.right = false;
     }
