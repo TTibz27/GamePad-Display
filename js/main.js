@@ -1,5 +1,14 @@
+// main.js
 
-console.log("adding controller event listener");
+const FRAME_TO_MS_CONST = 16.66666666;
+const CHARGE_BUFFER_FRAMES = 30;
+const CHARGE_TRAVEL_FRAMES = 12;
+const S_HORIZ_DOLPHIN_RECOVERY = 32;
+const HS_HORIZ_DOLPHIN_RECOVERY = 32;
+const S_VERT_DOLPHIN_RECOVERY =32;
+const HS_VERT_DOLPHIN_RECOVERY = 32;
+
+
 let gamePadIndex;
 let leftChargeTime = 0;
 let rightChargeTime = 0;
@@ -11,13 +20,7 @@ let downChargeWindowLock  =false;
 
 let moveRecoveryLock = false;
 
-const FRAME_TO_MS_CONST = 16.66666666;
-const CHARGE_BUFFER_FRAMES = 30;
-const CHARGE_TRAVEL_FRAMES = 12;
-const S_HORIZ_DOLPHIN_RECOVERY = 32;
-const HS_HORIZ_DOLPHIN_RECOVERY = 32;
-const S_VERT_DOLPHIN_RECOVERY =32;
-const HS_VERT_DOLPHIN_RECOVERY = 32;
+
 
 let buttonHeldMap = {};
 let prevButtonHeldMap ={};
