@@ -31,3 +31,12 @@
   left: 45px;
   top: 45px;
 }
+
+#TotsugekiCountDiv {
+  font-family: Impact;
+  font-size: 96px;
+  color: #f1f1f1;
+  text-stroke:3px #111111;
+  -webkit-text-stroke: 3px #111111;
+  text-align: center;
+}

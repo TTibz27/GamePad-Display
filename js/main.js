@@ -14,6 +14,8 @@ let leftChargeTime = 0;
 let rightChargeTime = 0;
 let downChargeTime = 0;
 
+let totsugekiCount = 0;
+
 let leftChargeWindowLock = false;
 let rightChargeWindowLock = false;
 let downChargeWindowLock  =false;
@@ -237,12 +239,8 @@ function checkChargeMove() {
     moveRecoveryLock === false &&
     (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
   ) {
-    console.log("TOTSU GEKI tm, left");
-    console.log(prevButtonHeldMap);
-    console.log(buttonHeldMap);
-    console.log(buttonPressedMap);
-    leftChargeTime = 0;
     addMoveRecovery(buttonHeldMap.circle ? HS_HORIZ_DOLPHIN_RECOVERY : S_HORIZ_DOLPHIN_RECOVERY);
+    handleTotsugeki();
   }
 
   if (rightChargeTime !== 0 &&
@@ -251,9 +249,9 @@ function checkChargeMove() {
     moveRecoveryLock === false &&
     (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
   ) {
-    console.log("TOTSUGEKI tm , right");
     rightChargeTime = 0;
     addMoveRecovery(buttonHeldMap.circle ? HS_HORIZ_DOLPHIN_RECOVERY : S_HORIZ_DOLPHIN_RECOVERY);
+    handleTotsugeki();
   }
 
   //DOWN CHARGE
@@ -263,9 +261,9 @@ function checkChargeMove() {
     moveRecoveryLock === false &&
     (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
   ) {
-    console.log("TOTSUGEKI tm, BUT UPWARDS");
     downChargeTime = 0;
     addMoveRecovery(buttonHeldMap.circle ? HS_VERT_DOLPHIN_RECOVERY : S_VERT_DOLPHIN_RECOVERY);
+    handleTotsugeki();
   }
 }
 
@@ -304,4 +302,9 @@ function addMoveRecovery(frames) {
   setTimeout(()=>{
     moveRecoveryLock = false;
   }, frames * FRAME_TO_MS_CONST);
+}
+
+function handleTotsugeki() {
+  totsugekiCount ++;
+  document.getElementById("totsugekiCountSpan").innerHTML = totsugekiCount + "";
 }
