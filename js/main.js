@@ -1,4 +1,6 @@
 // main.js
+import * as buttonMapper from "./buttonMapper.js";
+import {buttons} from "./buttonMapper.js";
 
 const FRAME_TO_MS_CONST = 16.66666666;
 const CHARGE_BUFFER_FRAMES = 30;
@@ -21,7 +23,6 @@ let rightChargeWindowLock = false;
 let downChargeWindowLock  =false;
 
 let moveRecoveryLock = false;
-
 
 
 let buttonHeldMap = {};
@@ -73,36 +74,38 @@ function gameLoop() {
 }
 
 function getButtonMapID(i, pressed){
+
+  const buttons = buttonMapper.buttons;
   switch (i){
-    case 0:
+    case buttons.x:
       buttonHeldMap.x = pressed;
       if (prevButtonHeldMap.x === false && pressed === true) {buttonPressedMap.x = true;}
       return "x-button";
-    case 1:
+    case buttons.circle:
       buttonHeldMap.circle = pressed;
       if (prevButtonHeldMap.circle === false && pressed === true) {buttonPressedMap.circle = true;}
       return "circle-button";
-    case 2:
+    case buttons.square:
       buttonHeldMap.square = pressed;
       if (prevButtonHeldMap.square === false && pressed === true) {buttonPressedMap.square = true;}
       return "square-button";
-    case 3:
+    case buttons.triangle:
       buttonHeldMap.triangle = pressed;
       if (prevButtonHeldMap.triangle === false && pressed === true) {buttonPressedMap.triangle = true;}
       return "triangle-button";
-    case 4:
+    case buttons.l1:
       buttonHeldMap.l1 = pressed;
       if (prevButtonHeldMap.l1 === false && pressed === true) {buttonPressedMap.l1 = true;}
       return "l1-button";
-    case 5:
+    case buttons.r1:
       buttonHeldMap.r1 = pressed;
       if (prevButtonHeldMap.r1 === false && pressed === true) {buttonPressedMap.r1 = true;}
       return "r1-button";
-    case 6:
+    case buttons.l2:
       buttonHeldMap.l2 = pressed;
       if (prevButtonHeldMap.l2 === false && pressed === true) {buttonPressedMap.l2 = true;}
       return "l2-button";
-    case 7:
+    case buttons.r2:
       buttonHeldMap.r2 = pressed;
       if (prevButtonHeldMap.r2 === false && pressed === true) {buttonPressedMap.r2 = true;}
       return "r2-button";
@@ -113,16 +116,16 @@ function getButtonMapID(i, pressed){
 
 function getDirectionMap(i){
   switch (i){
-    case 12:
+    case buttons.up:
       buttonHeldMap.up = true;
       return "up";
-    case 13:
+    case buttons.down:
       buttonHeldMap.down = true;
       return "down";
-    case 14:
+    case buttons.left:
       buttonHeldMap.left = true;
       return "left";
-    case 15:
+    case buttons.right:
       buttonHeldMap.right = true;
       return "right";
     default:
