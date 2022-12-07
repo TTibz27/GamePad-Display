@@ -29,6 +29,15 @@ let buttonHeldMap = {};
 let prevButtonHeldMap ={};
 let buttonPressedMap = {};
 
+
+const queryString = window.location.search;
+console.log(queryString);
+
+if (queryString === '?totsugeki'){
+  document.getElementById("StatusHeader").style.visibility = 'hidden';
+  document.getElementById("fullButtonMap").style.visibility = 'hidden';
+}
+
 window.addEventListener("gamepadconnected", (e) => {
   console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
     e.gamepad.index, e.gamepad.id,
