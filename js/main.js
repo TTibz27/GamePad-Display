@@ -7,8 +7,9 @@ const CHARGE_BUFFER_FRAMES = 30;
 const CHARGE_TRAVEL_FRAMES = 12;
 const S_HORIZ_DOLPHIN_RECOVERY = 32;
 const HS_HORIZ_DOLPHIN_RECOVERY = 32;
-const S_VERT_DOLPHIN_RECOVERY =32;
+const S_VERT_DOLPHIN_RECOVERY = 32;
 const HS_VERT_DOLPHIN_RECOVERY = 32;
+const BUTTON_PRESS_WINDOW = 2;
 
 
 let gamePadIndex;
@@ -21,6 +22,8 @@ let totsugekiCount = 0;
 let leftChargeWindowLock = false;
 let rightChargeWindowLock = false;
 let downChargeWindowLock  =false;
+let sJustPressed = false;
+let hsJustPressed = false;
 
 let moveRecoveryLock = false;
 
@@ -76,6 +79,7 @@ function gameLoop() {
   });
 
   moveFromDirectionMapValues();
+  checkButtonPress();
   checkChargeMove();
 
   prevButtonHeldMap = Object.assign({}, buttonHeldMap);
@@ -244,12 +248,27 @@ function moveFromDirectionMapValues(){
     document.getElementById('dpad-indication').style.top = (upPos) + 'px';
 }
 
+function checkButtonPress(){
+  if (buttonPressedMap.triangle){
+    sJustPressed = true;
+    setTimeout( ()=>{
+      sJustPressed = false;
+    }, BUTTON_PRESS_WINDOW * FRAME_TO_MS_CONST);
+  }
+  if (buttonPressedMap.circle){
+    hsJustPressed = true;
+    setTimeout( ()=>{
+      hsJustPressed = false;
+    }, BUTTON_PRESS_WINDOW * FRAME_TO_MS_CONST);
+  }
+}
 function checkChargeMove() {
+
   if (leftChargeTime !== 0 &&
     leftChargeWindowLock &&
     buttonHeldMap.right === true &&
     moveRecoveryLock === false &&
-    (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
+    (sJustPressed === true || hsJustPressed === true)
   ) {
     addMoveRecovery(buttonHeldMap.circle ? HS_HORIZ_DOLPHIN_RECOVERY : S_HORIZ_DOLPHIN_RECOVERY);
     handleTotsugeki();
@@ -259,7 +278,7 @@ function checkChargeMove() {
     rightChargeWindowLock &&
     buttonHeldMap.left === true &&
     moveRecoveryLock === false &&
-    (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
+    (sJustPressed === true || hsJustPressed === true)
   ) {
     rightChargeTime = 0;
     addMoveRecovery(buttonHeldMap.circle ? HS_HORIZ_DOLPHIN_RECOVERY : S_HORIZ_DOLPHIN_RECOVERY);
@@ -271,7 +290,7 @@ function checkChargeMove() {
     downChargeWindowLock &&
     buttonHeldMap.up === true &&
     moveRecoveryLock === false &&
-    (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
+    (sJustPressed === true || hsJustPressed === true)
   ) {
     downChargeTime = 0;
     addMoveRecovery(buttonHeldMap.circle ? HS_VERT_DOLPHIN_RECOVERY : S_VERT_DOLPHIN_RECOVERY);
