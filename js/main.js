@@ -3,7 +3,7 @@ import * as buttonMapper from "./buttonMapper.js";
 import {buttons} from "./buttonMapper.js";
 
 const FRAME_TO_MS_CONST = 16.66666666;
-const CHARGE_BUFFER_FRAMES = 23;
+const CHARGE_BUFFER_FRAMES = 24;
 const CHARGE_TRAVEL_FRAMES = 12;
 const S_HORIZ_DOLPHIN_RECOVERY = 15;
 const HS_HORIZ_DOLPHIN_RECOVERY = 15;
