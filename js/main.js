@@ -34,7 +34,7 @@ let buttonPressedMap = {};
 
 
 const queryString = window.location.search;
-// //console.log(queryString);
+console.log("Button Layout Type A");
 
 if (queryString === '?totsugeki'){
   document.getElementById("StatusHeader").style.visibility = 'hidden';
@@ -255,7 +255,7 @@ function checkButtonPress(){
       sJustPressed = false;
     }, BUTTON_PRESS_WINDOW * FRAME_TO_MS_CONST);
   }
-  if (buttonPressedMap.circle){
+  if (buttonPressedMap.r1){
     hsJustPressed = true;
     setTimeout( ()=>{
       hsJustPressed = false;
