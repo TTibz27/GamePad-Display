@@ -42,6 +42,7 @@ let buttonPressedMap = {};
 
 
 const queryString = window.location.search;
+console.log("Version: 0.2");
 console.log("Button Layout Type A");
 
 if (queryString === '?totsugeki'){
