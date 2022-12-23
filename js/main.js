@@ -3,13 +3,16 @@ import * as buttonMapper from "./buttonMapper.js";
 import {buttons} from "./buttonMapper.js";
 
 const FRAME_TO_MS_CONST = 16.66666666;
-const CHARGE_BUFFER_FRAMES = 24;
-const CHARGE_TRAVEL_FRAMES = 12;
+const CHARGE_BUFFER_FRAMES = 30;
+const CHARGE_TRAVEL_FRAMES = 10;
 const S_HORIZ_DOLPHIN_RECOVERY = 15;
 const HS_HORIZ_DOLPHIN_RECOVERY = 15;
-const S_VERT_DOLPHIN_RECOVERY =32;
+const S_VERT_DOLPHIN_RECOVERY =30;
 const HS_VERT_DOLPHIN_RECOVERY = 32;
-const BUTTON_PRESS_WINDOW = 2;
+const BUTTON_PRESS_WINDOW = 3;
+
+const PREJUMP_FRAMES = 4;
+const NEUTRAL_JUMP_HANGTIME = 36;
 
 
 let gamePadIndex;
@@ -21,11 +24,16 @@ let totsugekiCount = 0;
 
 let leftChargeWindowLock = false;
 let rightChargeWindowLock = false;
-let downChargeWindowLock  =false;
+let isDownChargeWindowStill  =false;
 let sJustPressed = false;
 let hsJustPressed = false;
+let otherButtonJustPressed = false; // this is to cancel out RC or FD or Burst
 
 let moveRecoveryLock = false;
+
+let likelyAirborne = false;
+let handlingJump = false;
+let debugTimerStart= 0;
 
 
 let buttonHeldMap = {};
@@ -80,7 +88,13 @@ function gameLoop() {
 
   moveFromDirectionMapValues();
   checkButtonPress();
-  checkChargeMove();
+  if (!likelyAirborne){
+    checkChargeMove();
+  }
+  else {
+    console.log("AIRBORNE!!!!")
+  }
+
 
   prevButtonHeldMap = Object.assign({}, buttonHeldMap);
   requestAnimationFrame(gameLoop);
@@ -90,6 +104,9 @@ function getButtonMapID(i, pressed){
 
   const buttons = buttonMapper.buttons;
   switch (i){
+    case buttons.up:
+      if ( prevButtonHeldMap.up ===false &&  pressed === true ) {setJumpTimer();}
+      return null; // returning a value forces a check for a display button. add this here for hitbox button indicators.
     case buttons.x:
       buttonHeldMap.x = pressed;
       if (prevButtonHeldMap.x === false && pressed === true) {buttonPressedMap.x = true;}
@@ -230,15 +247,15 @@ function moveFromDirectionMapValues(){
     }
     else {
       if (downChargeTime !==0 &&  Date.now() - downChargeTime > CHARGE_BUFFER_FRAMES * FRAME_TO_MS_CONST){
-        downChargeWindowLock = true;
+        isDownChargeWindowStill = true;
         setTimeout( ()=>{
-          downChargeWindowLock = false;
+          isDownChargeWindowStill = false;
           downChargeTime = 0;
           //console.log("Travel Window ended");
         },FRAME_TO_MS_CONST * CHARGE_TRAVEL_FRAMES);
       }
       else {
-        if (!downChargeWindowLock) {
+        if (!isDownChargeWindowStill) {
           downChargeTime = 0;
         }
       }
@@ -261,42 +278,52 @@ function checkButtonPress(){
       hsJustPressed = false;
     }, BUTTON_PRESS_WINDOW * FRAME_TO_MS_CONST);
   }
+  if (buttonPressedMap.square || buttonPressedMap.circle ||buttonPressedMap.x || buttonPressedMap.r2){
+    otherButtonJustPressed = true;
+    setTimeout( ()=>{
+      otherButtonJustPressed = false;
+    }, BUTTON_PRESS_WINDOW * FRAME_TO_MS_CONST);
+  }
 }
 function checkChargeMove() {
 
-   if (
-    !leftChargeWindowLock &&
-    (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
-  ) {
-    console.log("no window lock");
-  }
-   if (
-    moveRecoveryLock === true &&
-    (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
-  ) {
-    console.log("still move recovery");
-  }
-   if (leftChargeTime === 0 &&
-    (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
-  ) {
-    console.log("everything but charge");
-  }
-   if (
-    buttonHeldMap.right === false &&
-    (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
-  ) {
-    console.log("no right input");
-  }
+  //  if (
+  //   !leftChargeWindowLock &&
+  //   (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
+  // ) {
+  //   console.log("no window lock");
+  // }
+  //  if (
+  //   moveRecoveryLock === true &&
+  //   (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
+  // ) {
+  //   console.log("still move recovery");
+  // }
+  //  if (leftChargeTime === 0 &&
+  //   (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
+  // ) {
+  //   console.log("everything but charge");
+  // }
+  //  if (
+  //   buttonHeldMap.right === false &&
+  //   (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
+  // ) {
+  //   console.log("no right input");
+  // }
+
+
   //left charge
-  if (leftChargeTime !== 0 &&
-    leftChargeWindowLock &&
-    buttonHeldMap.right === true &&
-    moveRecoveryLock === false &&
-    (sJustPressed === true || hsJustPressed === true)
+  if (leftChargeTime !== 0 &&                                      // enough charge time
+    leftChargeWindowLock &&                                        // within travel window
+    buttonHeldMap.right === true &&                                //hitting forward
+    moveRecoveryLock === false &&                                  // not in move recovery
+    (sJustPressed === true || hsJustPressed === true) &&           // S or H pressed
+    !(sJustPressed && hsJustPressed) &&                            // but not both bc that's RC or Faultless or a different input
+    !otherButtonJustPressed                                        // or any other buttons pressed
   ) {
     leftChargeTime = 0;
-    addMoveRecovery(buttonHeldMap.circle ? HS_HORIZ_DOLPHIN_RECOVERY : S_HORIZ_DOLPHIN_RECOVERY);
-    handleTotsugeki();
+    addMoveRecovery(hsJustPressed ? HS_HORIZ_DOLPHIN_RECOVERY : S_HORIZ_DOLPHIN_RECOVERY);
+    handleTotsugeki(sJustPressed? 's':'hs');
   }
 
   //right charge
@@ -304,23 +331,57 @@ function checkChargeMove() {
     rightChargeWindowLock &&
     buttonHeldMap.left === true &&
     moveRecoveryLock === false &&
-    (sJustPressed === true || hsJustPressed === true)
+    (sJustPressed === true || hsJustPressed === true) &&
+    !(sJustPressed && hsJustPressed) &&
+    !otherButtonJustPressed
   ) {
     rightChargeTime = 0;
-    addMoveRecovery(buttonHeldMap.circle ? HS_HORIZ_DOLPHIN_RECOVERY : S_HORIZ_DOLPHIN_RECOVERY);
-    handleTotsugeki();
+    addMoveRecovery(hsJustPressed ? HS_HORIZ_DOLPHIN_RECOVERY : S_HORIZ_DOLPHIN_RECOVERY);
+    handleTotsugeki(sJustPressed? 's':'hs');
   }
+
+
+
+   if (
+    !isDownChargeWindowStill &&
+     (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
+  ) {
+    console.log("no window lock");
+  }
+   if (
+    moveRecoveryLock === true &&
+     (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
+  ) {
+    console.log("still move recovery");
+  }
+   if (downChargeTime === 0 &&
+     (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
+  ) {
+    console.log("everything but charge");
+  }
+   if (
+    buttonHeldMap.up === false &&
+     (buttonPressedMap.triangle === true || buttonPressedMap.circle === true)
+  ) {
+    console.log("no up input");
+  }
+
+
 
   //DOWN CHARGE
   if (downChargeTime !== 0 &&
-    downChargeWindowLock &&
+    isDownChargeWindowStill &&
     buttonHeldMap.up === true &&
     moveRecoveryLock === false &&
-    (sJustPressed === true || hsJustPressed === true)
+    (sJustPressed === true || hsJustPressed === true) &&
+    !(sJustPressed && hsJustPressed) &&
+    !otherButtonJustPressed
   ) {
     downChargeTime = 0;
-    addMoveRecovery(buttonHeldMap.circle ? HS_VERT_DOLPHIN_RECOVERY : S_VERT_DOLPHIN_RECOVERY);
-    handleTotsugeki();
+    likelyAirborne = false;
+    handlingJump = false;
+    addMoveRecovery(hsJustPressed ? HS_VERT_DOLPHIN_RECOVERY : S_VERT_DOLPHIN_RECOVERY);
+    handleTotsugeki(sJustPressed? 's':'hs');
   }
 }
 
@@ -361,7 +422,46 @@ function addMoveRecovery(frames) {
   }, frames * FRAME_TO_MS_CONST);
 }
 
-function handleTotsugeki() {
-  totsugekiCount ++;
-  document.getElementById("totsugekiCountSpan").innerHTML = totsugekiCount + "";
+function handleTotsugeki(buttonString) {
+
+  setTimeout( () => {
+    if(!otherButtonJustPressed ||
+      (buttonString === 'hs' && sJustPressed)||
+      (buttonString === 's' && hsJustPressed) ){ // two frame window after totsugeki to allow for RC or Burst or whatever
+      totsugekiCount ++;
+      document.getElementById("totsugekiCountSpan").innerHTML = totsugekiCount + "";
+    }
+
+  }, FRAME_TO_MS_CONST * BUTTON_PRESS_WINDOW);
+
+}
+
+function DEBUG_TIMER(){
+  if (debugTimerStart === 0){
+  debugTimerStart = Date.now();
+  console.log("started debug timer");
+  }
+  else {
+    console.log( "frames: "  +  ((Date.now() - debugTimerStart) / FRAME_TO_MS_CONST));
+    debugTimerStart = 0;
+  }
+}
+
+function setJumpTimer() {
+  handlingJump = true;    //handle the prejump here
+  setTimeout(()=>{
+    //prejump
+    if (!otherButtonJustPressed && !sJustPressed && !hsJustPressed && !moveRecoveryLock){  // this should filter out some up inputs or if the button happened already
+      likelyAirborne = true;
+      setTimeout(()=>{ // in 36 frames, clear everything
+        likelyAirborne = false;
+        handlingJump = false;
+      }, (NEUTRAL_JUMP_HANGTIME ) * FRAME_TO_MS_CONST);
+    }
+    else  {
+      //not a valid jump because of a move, probably
+      handlingJump = false;
+    }
+  }, (PREJUMP_FRAMES) * FRAME_TO_MS_CONST);
+
 }
